@@ -1,0 +1,14 @@
+{
+  "name": "cyber-security",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run source/index.ts"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
