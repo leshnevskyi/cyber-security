@@ -3,12 +3,18 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "bun run source/index.ts"
+    "start": "bun run source/index.ts",
+    "random-number-generator": "bun run source/tasks/random-number-generator/index.ts"
   },
   "devDependencies": {
+    "@types/inquirer": "^9.0.3",
     "bun-types": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "inquirer": "^9.2.10",
+    "zod": "^3.22.2"
   }
 }
