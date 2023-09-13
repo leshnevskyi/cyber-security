@@ -1,28 +1,33 @@
+fn lcg_next(m: u64, a: u64, c: u64, x: u64) -> u64 {
+    (a * x + c) % m
+}
+
 #[no_mangle]
-pub extern "C" fn lcg_period(m: u64, a: u64, c: u64, seed: u64) -> u64 {
-    let mut tortoise = (a * seed + c) % m; // Tortoise's first move
-    let mut hare = (a * (a * seed + c) + c) % m; // Hare's first two moves
+// Floyd's cycle-finding algorithm, aka the "tortoise and the hare" algorithm
+pub extern "C" fn lcg_period(m: u64, a: u64, c: u64, x: u64) -> u64 {
+    let mut tortoise = lcg_next(m, a, c, x);
+    let mut hare = lcg_next(m, a, c, lcg_next(m, a, c, x));
 
-    // Phase 1: Detect a cycle
+    // Phase 1: Find a repetition x_i = x_2i
     while tortoise != hare {
-        tortoise = (a * tortoise + c) % m;
-        hare = (a * (a * hare + c) + c) % m;
+        tortoise = lcg_next(m, a, c, tortoise);
+        hare = lcg_next(m, a, c, lcg_next(m, a, c, hare));
     }
 
-    // Phase 2: Find the start of the cycle
-    hare = seed;
+    // Phase 2: Find the position μ of first repetition
+    hare = x;
     while tortoise != hare {
-        tortoise = (a * tortoise + c) % m;
-        hare = (a * hare + c) % m;
+        tortoise = lcg_next(m, a, c, tortoise);
+        hare = lcg_next(m, a, c, hare);
     }
 
-    // Phase 3: Determine the cycle length
-    let mut length = 1;
-    hare = (a * tortoise + c) % m;
-    while tortoise != hare {
-        hare = (a * hare + c) % m;
-        length += 1;
+    // Phase 3: Find the length λ of the shortest cycle
+    let mut lambda = 1;
+    hare = lcg_next(m, a, c, tortoise);
+    while hare != tortoise {
+        hare = lcg_next(m, a, c, hare);
+        lambda += 1;
     }
 
-    length
+    lambda
 }
