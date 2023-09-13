@@ -2,7 +2,7 @@ import { type BunFile } from "bun";
 import path from "node:path";
 import inquirer from "inquirer";
 
-import { LcgRandom } from "common/random";
+import { LcgRandom } from "lib/random";
 
 type LcgArgs = {
   modulus: number;

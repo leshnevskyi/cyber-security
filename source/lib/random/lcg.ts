@@ -6,10 +6,10 @@ export class LcgRandom implements RandomGenerator {
   private generator: Generator<number>;
 
   constructor(
-    modulus: number,
-    multiplier: number,
-    increment: number,
-    seed: number
+    public modulus: number,
+    public multiplier: number,
+    public increment: number,
+    public seed: number
   ) {
     const argRecord = { modulus, multiplier, increment, seed };
     const generatorArgSchemaMap = new Map([
