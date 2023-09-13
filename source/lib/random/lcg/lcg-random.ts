@@ -1,6 +1,23 @@
 import { z } from "zod";
 
+import { lcgGenerator } from "./lcg-generator";
 import { type RandomGenerator } from "./types";
+
+import { includeNative, FFIType } from "lib/ffi";
+
+type LcgPeriodGetter = (
+  modulus: number | bigint,
+  multiplier: number | bigint,
+  increment: number | bigint,
+  seed: number | bigint
+) => bigint;
+
+const lcgPeriod: LcgPeriodGetter = includeNative("lcg-period", {
+  lcg_period: {
+    args: [FFIType.u64, FFIType.u64, FFIType.u64, FFIType.u64],
+    returns: FFIType.u64,
+  },
+}).lcg_period;
 
 export class LcgRandom implements RandomGenerator {
   private generator: Generator<number>;
@@ -24,25 +41,16 @@ export class LcgRandom implements RandomGenerator {
       schema.parse(argValue);
     }
 
-    this.generator = this.lcg(modulus, multiplier, increment, seed);
+    this.generator = lcgGenerator(modulus, multiplier, increment, seed);
   }
 
   public next(): number {
     return this.generator.next().value;
   }
 
-  private *lcg(
-    modulus: number,
-    multiplier: number,
-    increment: number,
-    seed: number
-  ): Generator<number, number, void> {
-    const nextValue = (multiplier * seed + increment) % modulus;
-
-    yield nextValue;
-
-    yield* this.lcg(modulus, multiplier, increment, nextValue);
-
-    return nextValue;
+  public get period(): number {
+    return Number(
+      lcgPeriod(this.modulus, this.multiplier, this.increment, this.seed)
+    );
   }
 }

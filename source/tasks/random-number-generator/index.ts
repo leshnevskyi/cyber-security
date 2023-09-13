@@ -1,6 +1,7 @@
 import { type BunFile } from "bun";
 import path from "node:path";
 import inquirer from "inquirer";
+import chalk from "chalk";
 
 import { LcgRandom } from "lib/random";
 
@@ -20,7 +21,7 @@ type LogFileRecord = {
 type LogFileContent = LogFileRecord[];
 
 const logFile = {
-  name: "log.json",
+  name: "lcg.log.json",
 
   get path(): string {
     return path.join(import.meta.dir, this.name);
@@ -80,7 +81,13 @@ const randomGenerator = new LcgRandom(modulus, multiplier, increment, seed);
 
 const randomNumbers = [...Array(numberCount)].map(() => randomGenerator.next());
 
-randomNumbers.map((number) => console.log(number));
+console.log("\n");
+console.group(chalk.bold(`Generated random ${numberCount} numbers:`));
+randomNumbers.map((number) => console.log(chalk.cyan(number)));
+console.groupEnd();
+
+console.log("\n");
+console.log(chalk.bold("Period:"), chalk.cyan(randomGenerator.period));
 
 if (!shouldLog) process.exit();
 
