@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "bun run source/index.ts",
-    "random-number-generator": "bun run source/tasks/random-number-generator/index.ts"
+    "random-number-generator": "bun run source/tasks/random-number-generator/index.ts",
+    "md5": "bun run source/tasks/hash/index.ts"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.3",
