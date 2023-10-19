@@ -1,3 +1,5 @@
+import { type BunFile } from "bun";
+import path from "node:path";
 import inquirer from "inquirer";
 import chalk from "chalk";
 
@@ -32,8 +34,44 @@ const promptResponse = await inquirer.prompt<PromptResponse>([
   },
 ]);
 
-function logMessageDigest(messageDigest: string): void {
+type LogFileRecord = {
+  timestamp: string;
+  messageDigest: string;
+};
+
+type LogFileContent = LogFileRecord[];
+
+const logFile = {
+  name: "lcg.log.json",
+
+  get path(): string {
+    return path.join(import.meta.dir, this.name);
+  },
+
+  get ref(): BunFile {
+    return Bun.file(this.path, { type: "application/json" });
+  },
+
+  get content(): Promise<LogFileContent> {
+    return this.ref
+      .exists()
+      .then((fileExists) =>
+        fileExists
+          ? (this.ref.json() as Promise<LogFileContent>)
+          : Promise.resolve([])
+      );
+  },
+};
+
+async function logMessageDigest(messageDigest: string): Promise<void> {
   console.log(`\n Hash: ${chalk.greenBright(messageDigest)}`);
+
+  const logRecord = {
+    timestamp: new Date().toISOString(),
+    messageDigest,
+  };
+
+  Bun.write(logFile.path, JSON.stringify(logRecord, null, 2));
 }
 
 if (promptResponse.messageSource === "string") {
