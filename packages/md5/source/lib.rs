@@ -58,129 +58,55 @@ pub fn md5(input: &str) -> Digest {
 
         let (aa, bb, cc, dd) = (a, b, c, d);
 
-        macro_rules! round1 {
-            ($a:ident, $b:ident, $c:ident, $d:ident, $k:expr, $s:expr, $i: expr) => {
+        macro_rules! round {
+            ($func:ident, $a:ident, $b:ident, $c:ident, $d:ident, $k:expr, $s:expr, $i:expr) => {
                 $a = $b.wrapping_add(
-                    ($a.wrapping_add(f($b, $c, $d))
+                    ($a.wrapping_add($func($b, $c, $d))
                         .wrapping_add(x[$k])
                         .wrapping_add(table_values[$i]))
                     .rotate_left($s),
-                )
+                );
             };
         }
 
-        round1!(a, b, c, d, 0, 7, 0);
-        round1!(d, a, b, c, 1, 12, 1);
-        round1!(c, d, a, b, 2, 17, 2);
-        round1!(b, c, d, a, 3, 22, 3);
-
-        round1!(a, b, c, d, 4, 7, 4);
-        round1!(d, a, b, c, 5, 12, 5);
-        round1!(c, d, a, b, 6, 17, 6);
-        round1!(b, c, d, a, 7, 22, 7);
-
-        round1!(a, b, c, d, 8, 7, 8);
-        round1!(d, a, b, c, 9, 12, 9);
-        round1!(c, d, a, b, 10, 17, 10);
-        round1!(b, c, d, a, 11, 22, 11);
-
-        round1!(a, b, c, d, 12, 7, 12);
-        round1!(d, a, b, c, 13, 12, 13);
-        round1!(c, d, a, b, 14, 17, 14);
-        round1!(b, c, d, a, 15, 22, 15);
-
-        macro_rules! round2 {
-            ($a:ident, $b:ident, $c:ident, $d:ident, $k:expr, $s:expr, $i:expr) => {
-                $a = $b.wrapping_add(
-                    ($a.wrapping_add(g($b, $c, $d))
-                        .wrapping_add(x[$k])
-                        .wrapping_add(table_values[$i - 1]))
-                    .rotate_left($s),
-                )
-            };
+        struct Round {
+            func: fn(u32, u32, u32) -> u32,
+            k: [u32; 16],
+            s: [u32; 16],
         }
 
-        round2!(a, b, c, d, 1, 5, 17);
-        round2!(d, a, b, c, 6, 9, 18);
-        round2!(c, d, a, b, 11, 14, 19);
-        round2!(b, c, d, a, 0, 20, 20);
+        let rounds: [Round; 4] = [
+            Round {
+                func: f,
+                k: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                s: [7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22],
+            },
+            Round {
+                func: g,
+                k: [1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12],
+                s: [5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20],
+            },
+            Round {
+                func: h,
+                k: [5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2],
+                s: [4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23],
+            },
+            Round {
+                func: i,
+                k: [0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9],
+                s: [6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21],
+            },
+        ];
 
-        round2!(a, b, c, d, 5, 5, 21);
-        round2!(d, a, b, c, 10, 9, 22);
-        round2!(c, d, a, b, 15, 14, 23);
-        round2!(b, c, d, a, 4, 20, 24);
-
-        round2!(a, b, c, d, 9, 5, 25);
-        round2!(d, a, b, c, 14, 9, 26);
-        round2!(c, d, a, b, 3, 14, 27);
-        round2!(b, c, d, a, 8, 20, 28);
-
-        round2!(a, b, c, d, 13, 5, 29);
-        round2!(d, a, b, c, 2, 9, 30);
-        round2!(c, d, a, b, 7, 14, 31);
-        round2!(b, c, d, a, 12, 20, 32);
-
-        macro_rules! round3 {
-            ($a:ident, $b:ident, $c:ident, $d:ident, $k:expr, $s:expr, $i:expr) => {
-                $a = $b.wrapping_add(
-                    ($a.wrapping_add(h($b, $c, $d))
-                        .wrapping_add(x[$k])
-                        .wrapping_add(table_values[$i - 1]))
-                    .rotate_left($s),
-                )
-            };
+        for (round_index, round) in rounds.iter().enumerate() {
+            for i in 0..16 {
+                let func = round.func;
+                let k_value = round.k[i] as usize;
+                let table_value_index = round_index * 16 + i;
+                round!(func, a, b, c, d, k_value, round.s[i], table_value_index);
+                (a, b, c, d) = (d, a, b, c);
+            }
         }
-
-        round3!(a, b, c, d, 5, 4, 33);
-        round3!(d, a, b, c, 8, 11, 34);
-        round3!(c, d, a, b, 11, 16, 35);
-        round3!(b, c, d, a, 14, 23, 36);
-
-        round3!(a, b, c, d, 1, 4, 37);
-        round3!(d, a, b, c, 4, 11, 38);
-        round3!(c, d, a, b, 7, 16, 39);
-        round3!(b, c, d, a, 10, 23, 40);
-
-        round3!(a, b, c, d, 13, 4, 41);
-        round3!(d, a, b, c, 0, 11, 42);
-        round3!(c, d, a, b, 3, 16, 43);
-        round3!(b, c, d, a, 6, 23, 44);
-
-        round3!(a, b, c, d, 9, 4, 45);
-        round3!(d, a, b, c, 12, 11, 46);
-        round3!(c, d, a, b, 15, 16, 47);
-        round3!(b, c, d, a, 2, 23, 48);
-
-        macro_rules! round4 {
-            ($a:ident, $b:ident, $c:ident, $d:ident, $k:expr, $s:expr, $i:expr) => {
-                $a = $b.wrapping_add(
-                    ($a.wrapping_add(i($b, $c, $d))
-                        .wrapping_add(x[$k])
-                        .wrapping_add(table_values[$i - 1]))
-                    .rotate_left($s),
-                )
-            };
-        }
-
-        round4!(a, b, c, d, 0, 6, 49);
-        round4!(d, a, b, c, 7, 10, 50);
-        round4!(c, d, a, b, 14, 15, 51);
-        round4!(b, c, d, a, 5, 21, 52);
-
-        round4!(a, b, c, d, 12, 6, 53);
-        round4!(d, a, b, c, 3, 10, 54);
-        round4!(c, d, a, b, 10, 15, 55);
-        round4!(b, c, d, a, 1, 21, 56);
-
-        round4!(a, b, c, d, 8, 6, 57);
-        round4!(d, a, b, c, 15, 10, 58);
-        round4!(c, d, a, b, 6, 15, 59);
-        round4!(b, c, d, a, 13, 21, 60);
-
-        round4!(a, b, c, d, 4, 6, 61);
-        round4!(d, a, b, c, 11, 10, 62);
-        round4!(c, d, a, b, 2, 15, 63);
-        round4!(b, c, d, a, 9, 21, 64);
 
         a = a.wrapping_add(aa);
         b = b.wrapping_add(bb);
