@@ -1,0 +1,12 @@
+[package]
+name = "rc5"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+random = { git = "https://github.com/MatviySuk/DAS_Course.git", branch = "Random" }
+md5 = { path = "../md5" }
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+path = "source/lib.rs"
