@@ -12,7 +12,7 @@ type LcgPeriodGetter = (
   seed: number | bigint
 ) => bigint;
 
-const lcgPeriod: LcgPeriodGetter = includeNative("lcg-period", {
+const lcgPeriod: LcgPeriodGetter = includeNative("lcg", {
   lcg_period: {
     args: [FFIType.u64, FFIType.u64, FFIType.u64, FFIType.u64],
     returns: FFIType.u64,
