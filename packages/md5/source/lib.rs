@@ -23,7 +23,7 @@ fn i(x: u32, y: u32, z: u32) -> u32 {
     y ^ (x | !z)
 }
 
-pub fn md5(input: &str) -> Digest {
+pub fn digest(input: &str) -> Digest {
     let mut data: Vec<u8> = input.as_bytes().to_vec();
     let data_len_bits = (data.len() as u64) * 8;
     data.push(0x80);
@@ -136,7 +136,7 @@ pub mod ffi {
         .to_str()
         .unwrap_or_default();
 
-        CString::new(crate::md5(input).to_string())
+        CString::new(crate::digest(input).to_string())
             .unwrap_or_default()
             .into_raw()
     }
@@ -144,7 +144,7 @@ pub mod ffi {
 
 #[cfg(test)]
 mod tests {
-    use super::md5;
+    use super::digest;
 
     #[test]
     fn rfc_md5_test_suite() {
@@ -168,7 +168,12 @@ mod tests {
         ];
 
         for &(input, expected) in test_cases {
-            assert_eq!(expected, md5(input).to_string(), "Failed input: {}", input);
+            assert_eq!(
+                expected,
+                digest(input).to_string(),
+                "Failed input: {}",
+                input
+            );
         }
     }
 }
