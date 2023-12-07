@@ -1,0 +1,16 @@
+[package]
+name = "rc5-vs-rsa"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "rc5-vs-rsa"
+path = "source/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+openssl = "0.10.57"
+rc5 = { path = "../rc5" }
+clap = { version = "4.4.6", features = ["derive"] }
+prettytable-rs = "^0.10"
